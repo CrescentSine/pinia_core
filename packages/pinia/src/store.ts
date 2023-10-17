@@ -418,7 +418,7 @@ function createSetupStore<
 
   // store the partial store now so the setup of stores can instantiate each other before they are finished without
   // creating infinite loops.
-  pinia._s.set($id, store)
+  pinia._s.set($id, store as Store)
 
   const runWithContext = fallbackRunWithContext
 
@@ -485,7 +485,7 @@ function createSetupStore<
       store,
       scope.run(() =>
         extender({
-          store,
+          store: store as Store,
           pinia,
           options: optionsForPlugin,
         })
