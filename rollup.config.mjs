@@ -162,20 +162,23 @@ function createReplacePlugin(
   isGlobalBuild,
   isNodeBuild
 ) {
+  const __DEV__ =
+    isNodeBuild && !isProduction
+      ? // preserve to be handled by bundlers
+        `(process.env.NODE_ENV !== 'production')`
+      : // hard coded dev/prod builds
+        JSON.stringify(!isProduction)
+
+  const __TEST__ =
+    isNodeBuild
+      ? `(process.env.NODE_ENV === 'test')`
+      : 'false'
   const replacements = {
     __COMMIT__: `"${process.env.COMMIT}"`,
     __VERSION__: `"${pkg.version}"`,
-    __DEV__:
-      isNodeBuild && !isProduction
-        ? // preserve to be handled by bundlers
-        `(process.env.NODE_ENV !== 'production')`
-        : // hard coded dev/prod builds
-        JSON.stringify(!isProduction),
+    __DEV__,
     // this is only used during tests
-    __TEST__:
-      isNodeBuild
-        ? `(process.env.NODE_ENV === 'test')`
-        : 'false',
+    __TEST__,
     // If the build is expected to run directly in the browser (global / esm builds)
     __BROWSER__: JSON.stringify(isRawESMBuild),
     // is targeting bundlers?

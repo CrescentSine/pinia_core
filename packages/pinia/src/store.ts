@@ -349,7 +349,7 @@ function createSetupStore<
         onError,
       })
 
-      let ret: any
+      let ret: unknown
       try {
         ret = action.apply(this && this.$id === $id ? this : store, args)
         // handle sync errors
