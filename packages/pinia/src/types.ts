@@ -297,7 +297,6 @@ export interface _StoreWithState<
 
   /**
    * Resets the store to its initial state by building a new state object.
-   * TODO: make this options only
    */
   $reset(): void
 
