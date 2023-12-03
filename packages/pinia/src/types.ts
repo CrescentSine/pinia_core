@@ -263,27 +263,6 @@ export interface StoreProperties<Id extends string> {
   _p: Pinia
 
   /**
-   * Used by devtools plugin to retrieve getters. Removed in production.
-   *
-   * @internal
-   */
-  _getters?: string[]
-
-  /**
-   * Used (and added) by devtools plugin to detect Setup vs Options API usage.
-   *
-   * @internal
-   */
-  _isOptionsAPI?: boolean
-
-  /**
-   * Used by devtools plugin to retrieve properties added with plugins. Removed
-   * in production. Can be used by the user to add property keys of the store
-   * that should be displayed in devtools.
-   */
-  _customProperties: Set<string>
-
-  /**
    * Handles a HMR replacement of this store. Dev Only.
    *
    * @internal

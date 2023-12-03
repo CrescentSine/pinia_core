@@ -48,7 +48,7 @@ import {
   _StoreWithState,
 } from './types'
 import { setActivePinia, piniaSymbol, Pinia, activePinia } from './rootStore'
-import { IS_CLIENT, USE_DEVTOOLS } from './env'
+import { IS_CLIENT } from './env'
 import { patchObject } from './hmr'
 import { addSubscription, triggerSubscriptions, noop } from './subscriptions'
 
@@ -457,19 +457,7 @@ function createSetupStore<
     partialStore._r = false
   }
 
-  const store: Store<Id, S, G, A> = reactive(
-    __DEV__ || USE_DEVTOOLS
-      ? assign(
-          {
-            _hmrPayload,
-            _customProperties: markRaw(new Set<string>()), // devtools custom properties
-          },
-          partialStore
-          // must be added later
-          // setupStore
-        )
-      : partialStore
-  ) as unknown as Store<Id, S, G, A>
+  const store: Store<Id, S, G, A> = reactive(partialStore) as unknown as Store<Id, S, G, A>
 
   // store the partial store now so the setup of stores can instantiate each other before they are finished without
   // creating infinite loops.
@@ -668,26 +656,6 @@ function createSetupStore<
     })
   }
 
-  if (USE_DEVTOOLS) {
-    const nonEnumerable = {
-      writable: true,
-      configurable: true,
-      // avoid warning on devtools trying to display this property
-      enumerable: false,
-    }
-
-    // avoid listing internal properties in devtools
-    ;(['_p', '_hmrPayload', '_getters', '_customProperties'] as const).forEach(
-      (p) => {
-        Object.defineProperty(
-          store,
-          p,
-          assign({ value: store[p] }, nonEnumerable)
-        )
-      }
-    )
-  }
-
   /* istanbul ignore if */
   if (isVue2) {
     // mark the store as ready before plugins
@@ -696,9 +664,9 @@ function createSetupStore<
 
   // apply all plugins
   pinia._p.forEach((extender) => {
-    /* istanbul ignore else */
-    if (USE_DEVTOOLS) {
-      const extensions = scope.run(() =>
+    assign(
+      store,
+      scope.run(() =>
         extender({
           store,
           app: pinia._a,
@@ -706,23 +674,7 @@ function createSetupStore<
           options: optionsForPlugin,
         })
       )!
-      Object.keys(extensions || {}).forEach((key) =>
-        store._customProperties.add(key)
-      )
-      assign(store, extensions)
-    } else {
-      assign(
-        store,
-        scope.run(() =>
-          extender({
-            store,
-            app: pinia._a,
-            pinia,
-            options: optionsForPlugin,
-          })
-        )!
-      )
-    }
+    )
   })
 
   if (

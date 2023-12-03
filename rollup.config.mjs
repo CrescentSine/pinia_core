@@ -128,13 +128,6 @@ function createConfig(buildName, output, plugins = []) {
   hasTSChecked = true
 
   const external = ['vue-demi', 'vue', '@vue/composition-api']
-  if (
-    !isGlobalBuild &&
-    // pinia.prod.cjs should not require `@vue/devtools-api` (like Vue)
-    !(isProductionBuild && isNodeBuild)
-  ) {
-    external.push('@vue/devtools-api')
-  }
 
   const nodePlugins = [nodeResolve(), commonjs()]
 
@@ -178,17 +171,14 @@ function createReplacePlugin(
     __DEV__:
       (isBundlerESMBuild && !isRawESMBuild) || (isNodeBuild && !isProduction)
         ? // preserve to be handled by bundlers
-          `(process.env.NODE_ENV !== 'production')`
+        `(process.env.NODE_ENV !== 'production')`
         : // hard coded dev/prod builds
-          JSON.stringify(!isProduction),
+        JSON.stringify(!isProduction),
     // this is only used during tests
     __TEST__:
       (isBundlerESMBuild && !isRawESMBuild) || isNodeBuild
         ? `(process.env.NODE_ENV === 'test')`
         : 'false',
-    __FEATURE_PROD_DEVTOOLS__: isBundlerESMBuild
-      ? `(typeof __VUE_PROD_DEVTOOLS__ !== 'undefined' && __VUE_PROD_DEVTOOLS__)`
-      : 'false',
     // If the build is expected to run directly in the browser (global / esm builds)
     __BROWSER__: JSON.stringify(isRawESMBuild),
     // is targeting bundlers?

@@ -101,9 +101,6 @@ importers:
       '@vue/composition-api':
         specifier: ^1.4.0
         version: 1.4.0(vue@3.3.4)
-      '@vue/devtools-api':
-        specifier: ^6.5.0
-        version: 6.5.0
       typescript:
         specifier: '>=4.4.4'
         version: 4.9.4
@@ -1020,10 +1017,6 @@ packages:
     dependencies:
       tslib: 2.4.1
       vue: 3.3.4
-    dev: false
-
-  /@vue/devtools-api@6.5.0:
-    resolution: {integrity: sha512-o9KfBeaBmCKl10usN4crU53fYtC1r7jJwdGKjPT24t348rHxgfpZ0xL3Xm/gLUYnc0oTp8LAmrxOeLyu6tbk2Q==}
     dev: false
 
   /@vue/reactivity-transform@3.3.4:

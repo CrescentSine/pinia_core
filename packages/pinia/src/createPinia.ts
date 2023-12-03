@@ -1,7 +1,5 @@
 import { Pinia, PiniaPlugin, setActivePinia, piniaSymbol } from './rootStore'
 import { ref, App, markRaw, effectScope, isVue2, Ref } from 'vue-demi'
-import { registerPiniaDevtools, devtoolsPlugin } from './devtools'
-import { USE_DEVTOOLS } from './env'
 import { StateTree, StoreGeneric } from './types'
 
 /**
@@ -28,10 +26,6 @@ export function createPinia(): Pinia {
         pinia._a = app
         app.provide(piniaSymbol, pinia)
         app.config.globalProperties.$pinia = pinia
-        /* istanbul ignore else */
-        if (USE_DEVTOOLS) {
-          registerPiniaDevtools(app, pinia)
-        }
         toBeInstalled.forEach((plugin) => _p.push(plugin))
         toBeInstalled = []
       }
@@ -54,12 +48,6 @@ export function createPinia(): Pinia {
     _s: new Map<string, StoreGeneric>(),
     state,
   })
-
-  // pinia devtools rely on dev only features so they cannot be forced unless
-  // the dev build of Vue is used. Avoid old browsers like IE11.
-  if (USE_DEVTOOLS && typeof Proxy !== 'undefined') {
-    pinia.use(devtoolsPlugin)
-  }
 
   return pinia
 }
