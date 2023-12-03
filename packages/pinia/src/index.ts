@@ -80,5 +80,3 @@ export type {
   _Spread,
   _StoreObject,
 } from './mapHelpers'
-
-export { acceptHMRUpdate } from './hmr'

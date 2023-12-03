@@ -3,7 +3,6 @@ import {
   computed,
   inject,
   hasInjectionContext,
-  getCurrentInstance,
   reactive,
   DebuggerEvent,
   WatchOptions,
@@ -15,12 +14,9 @@ import {
   EffectScope,
   ComputedRef,
   toRaw,
-  toRef,
   toRefs,
-  Ref,
   ref,
   set,
-  del,
   nextTick,
   isVue2,
 } from 'vue-demi'
@@ -48,7 +44,6 @@ import {
   _StoreWithState,
 } from './types'
 import { setActivePinia, piniaSymbol, Pinia, activePinia } from './rootStore'
-import { patchObject } from './hmr'
 import { addSubscription, triggerSubscriptions, noop } from './subscriptions'
 
 const fallbackRunWithContext = (fn: () => unknown) => fn()
@@ -138,8 +133,7 @@ function createOptionsStore<
 >(
   id: Id,
   options: DefineStoreOptions<Id, S, G, A>,
-  pinia: Pinia,
-  hot?: boolean
+  pinia: Pinia
 ): Store<Id, S, G, A> {
   const { state, actions, getters } = options
 
@@ -148,7 +142,7 @@ function createOptionsStore<
   let store: Store<Id, S, G, A>
 
   function setup() {
-    if (!initialState && (!__DEV__ || !hot)) {
+    if (!initialState) {
       /* istanbul ignore if */
       if (isVue2) {
         set(pinia.state.value, id, state ? state() : {})
@@ -159,7 +153,7 @@ function createOptionsStore<
 
     // avoid creating a state in pinia.state.value
     const localState =
-      __DEV__ && hot
+      __DEV__
         ? // use ref() to unwrap refs inside state TODO: check if this is still necessary
           toRefs(ref(state ? state() : {}).value)
         : toRefs(pinia.state.value[id])
@@ -195,7 +189,7 @@ function createOptionsStore<
     )
   }
 
-  store = createSetupStore(id, setup, options, pinia, hot, true)
+  store = createSetupStore(id, setup, options, pinia, true)
 
   return store as any
 }
@@ -213,7 +207,6 @@ function createSetupStore<
     | DefineSetupStoreOptions<Id, S, G, A>
     | DefineStoreOptions<Id, S, G, A> = {},
   pinia: Pinia,
-  hot?: boolean,
   isOptionsStore?: boolean
 ): Store<Id, S, G, A> {
   let scope!: EffectScope
@@ -240,7 +233,7 @@ function createSetupStore<
       if (isListening) {
         debuggerEvents = event
         // avoid triggering this while the store is being built and the state is being set in pinia
-      } else if (isListening == false && !store._hotUpdating) {
+      } else {
         // let patch send all the events together later
         /* istanbul ignore else */
         if (Array.isArray(debuggerEvents)) {
@@ -264,7 +257,7 @@ function createSetupStore<
 
   // avoid setting the state for option stores if it is set
   // by the setup
-  if (!isOptionsStore && !initialState && (!__DEV__ || !hot)) {
+  if (!isOptionsStore && !initialState) {
     /* istanbul ignore if */
     if (isVue2) {
       set(pinia.state.value, $id, {})
@@ -272,8 +265,6 @@ function createSetupStore<
       pinia.state.value[$id] = {}
     }
   }
-
-  const hotState = ref({} as S)
 
   // avoid triggering too many listeners
   // https://github.com/vuejs/pinia/issues/1129
@@ -405,13 +396,6 @@ function createSetupStore<
     }
   }
 
-  const _hmrPayload = /*#__PURE__*/ markRaw({
-    actions: {} as Record<string, any>,
-    getters: {} as Record<string, Ref>,
-    state: [] as string[],
-    hotState,
-  })
-
   const partialStore = {
     _p: pinia,
     // _s: scope,
@@ -475,12 +459,7 @@ function createSetupStore<
     const prop = setupStore[key]
 
     if ((isRef(prop) && !isComputed(prop)) || isReactive(prop)) {
-      // mark it as a piece of state to be serialized
-      if (__DEV__ && hot) {
-        set(hotState.value, key, toRef(setupStore as any, key))
-        // createOptionStore directly sets the state in pinia.state.value so we
-        // can just skip that
-      } else if (!isOptionsStore) {
+      if (!isOptionsStore) {
         // in setup stores we must hydrate the state and sync pinia state tree with the refs the user just created
         if (initialState && shouldHydrate(prop)) {
           if (isRef(prop)) {
@@ -500,14 +479,10 @@ function createSetupStore<
         }
       }
 
-      /* istanbul ignore else */
-      if (__DEV__) {
-        _hmrPayload.state.push(key)
-      }
       // action
     } else if (typeof prop === 'function') {
       // @ts-expect-error: we are overriding the function we avoid wrapping if
-      const actionValue = __DEV__ && hot ? prop : wrapAction(key, prop)
+      const actionValue = wrapAction(key, prop)
       // this a hot module replacement store because the hotUpdate method needs
       // to do it with the right context
       /* istanbul ignore if */
@@ -518,22 +493,9 @@ function createSetupStore<
         setupStore[key] = actionValue
       }
 
-      /* istanbul ignore else */
-      if (__DEV__) {
-        _hmrPayload.actions[key] = prop
-      }
-
       // list actions so they can be used in plugins
       // @ts-expect-error
       optionsForPlugin.actions[key] = prop
-    } else if (__DEV__) {
-      // add getters for devtools
-      if (isComputed(prop)) {
-        _hmrPayload.getters[key] = isOptionsStore
-          ? // @ts-expect-error
-            options.getters[key]
-          : prop
-      }
     }
   }
 
@@ -554,99 +516,13 @@ function createSetupStore<
   // without linking the computed lifespan to wherever the store is first
   // created.
   Object.defineProperty(store, '$state', {
-    get: () => (__DEV__ && hot ? hotState.value : pinia.state.value[$id]),
+    get: () => pinia.state.value[$id],
     set: (state) => {
-      /* istanbul ignore if */
-      if (__DEV__ && hot) {
-        throw new Error('cannot set hotState')
-      }
       $patch(($state) => {
         assign($state, state)
       })
     },
   })
-
-  // add the hotUpdate before plugins to allow them to override it
-  /* istanbul ignore else */
-  if (__DEV__) {
-    store._hotUpdate = markRaw((newStore) => {
-      store._hotUpdating = true
-      newStore._hmrPayload.state.forEach((stateKey) => {
-        if (stateKey in store.$state) {
-          const newStateTarget = newStore.$state[stateKey]
-          const oldStateSource = store.$state[stateKey]
-          if (
-            typeof newStateTarget === 'object' &&
-            isPlainObject(newStateTarget) &&
-            isPlainObject(oldStateSource)
-          ) {
-            patchObject(newStateTarget, oldStateSource)
-          } else {
-            // transfer the ref
-            newStore.$state[stateKey] = oldStateSource
-          }
-        }
-        // patch direct access properties to allow store.stateProperty to work as
-        // store.$state.stateProperty
-        set(store, stateKey, toRef(newStore.$state, stateKey))
-      })
-
-      // remove deleted state properties
-      Object.keys(store.$state).forEach((stateKey) => {
-        if (!(stateKey in newStore.$state)) {
-          del(store, stateKey)
-        }
-      })
-
-      // avoid devtools logging this as a mutation
-      isListening = false
-      isSyncListening = false
-      pinia.state.value[$id] = toRef(newStore._hmrPayload, 'hotState')
-      isSyncListening = true
-      nextTick().then(() => {
-        isListening = true
-      })
-
-      for (const actionName in newStore._hmrPayload.actions) {
-        const action: _Method = newStore[actionName]
-
-        set(store, actionName, wrapAction(actionName, action))
-      }
-
-      // TODO: does this work in both setup and option store?
-      for (const getterName in newStore._hmrPayload.getters) {
-        const getter: _Method = newStore._hmrPayload.getters[getterName]
-        const getterValue = isOptionsStore
-          ? // special handling of options api
-            computed(() => {
-              setActivePinia(pinia)
-              return getter.call(store, store)
-            })
-          : getter
-
-        set(store, getterName, getterValue)
-      }
-
-      // remove deleted getters
-      Object.keys(store._hmrPayload.getters).forEach((key) => {
-        if (!(key in newStore._hmrPayload.getters)) {
-          del(store, key)
-        }
-      })
-
-      // remove old actions
-      Object.keys(store._hmrPayload.actions).forEach((key) => {
-        if (!(key in newStore._hmrPayload.actions)) {
-          del(store, key)
-        }
-      })
-
-      // update the values used in devtools and to allow deleting new properties later on
-      store._hmrPayload = newStore._hmrPayload
-      store._getters = newStore._getters
-      store._hotUpdating = false
-    })
-  }
 
   /* istanbul ignore if */
   if (isVue2) {
@@ -836,7 +712,7 @@ export function defineStore(
     }
   }
 
-  function useStore(pinia?: Pinia | null, hot?: StoreGeneric): StoreGeneric {
+  function useStore(pinia?: Pinia | null): StoreGeneric {
     const hasContext = hasInjectionContext()
     pinia =
       // in test mode, ignore the argument provided as we can always retrieve a
@@ -862,28 +738,9 @@ export function defineStore(
       } else {
         createOptionsStore(id, options as any, pinia)
       }
-
-      /* istanbul ignore else */
-      if (__DEV__) {
-        // @ts-expect-error: not the right inferred type
-        useStore._pinia = pinia
-      }
     }
 
     const store: StoreGeneric = pinia._s.get(id)!
-
-    if (__DEV__ && hot) {
-      const hotId = '__hot:' + id
-      const newStore = isSetupStore
-        ? createSetupStore(hotId, setup, options, pinia, true)
-        : createOptionsStore(hotId, assign({}, options) as any, pinia, true)
-
-      hot._hotUpdate(newStore)
-
-      // cleanup the state properties and the store from the cache
-      delete pinia.state.value[hotId]
-      pinia._s.delete(hotId)
-    }
 
     // StoreGeneric cannot be casted towards Store
     return store as any

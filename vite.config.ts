@@ -32,7 +32,6 @@ export default defineConfig({
       exclude: [
         '**/src/index.ts',
         '**/*.d.ts',
-        '**/src/hmr.ts',
         '**/src/deprecated.ts',
       ],
     },

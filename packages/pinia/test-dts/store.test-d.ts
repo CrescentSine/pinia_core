@@ -1,4 +1,4 @@
-import { StoreGeneric, acceptHMRUpdate, defineStore, expectType } from './'
+import { StoreGeneric, defineStore, expectType } from './'
 import { UnwrapRef, watch } from 'vue'
 
 const useStore = defineStore({
@@ -141,10 +141,6 @@ defineStore({
 })
 
 const store = useStore()
-
-if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useStore, import.meta.hot))
-}
 
 expectType<{ a: 'on' | 'off' }>(store.$state)
 expectType<number>(store.nested.counter)

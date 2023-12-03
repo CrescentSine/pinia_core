@@ -1,7 +1,6 @@
 import type {
   ComputedRef,
   DebuggerEvent,
-  Ref,
   UnwrapRef,
   WatchOptions,
 } from 'vue-demi'
@@ -261,33 +260,6 @@ export interface StoreProperties<Id extends string> {
    * @internal
    */
   _p: Pinia
-
-  /**
-   * Handles a HMR replacement of this store. Dev Only.
-   *
-   * @internal
-   */
-  _hotUpdate(useStore: StoreGeneric): void
-
-  /**
-   * Allows pausing some of the watching mechanisms while the store is being
-   * patched with a newer version.
-   *
-   * @internal
-   */
-  _hotUpdating: boolean
-
-  /**
-   * Payload of the hmr update. Dev only.
-   *
-   * @internal
-   */
-  _hmrPayload: {
-    state: string[]
-    hotState: Ref<StateTree>
-    actions: _ActionsTree
-    getters: _ActionsTree
-  }
 }
 
 /**
@@ -487,13 +459,6 @@ export interface StoreDefinition<
    * Id of the store. Used by map helpers.
    */
   $id: Id
-
-  /**
-   * Dev only pinia for HMR.
-   *
-   * @internal
-   */
-  _pinia?: Pinia
 }
 
 /**
