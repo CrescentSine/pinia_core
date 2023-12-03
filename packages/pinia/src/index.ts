@@ -84,5 +84,3 @@ export type {
 export { acceptHMRUpdate } from './hmr'
 
 export { PiniaVuePlugin } from './vue2-plugin'
-
-export * from './globalExtensions'
