@@ -48,7 +48,6 @@ import {
   _StoreWithState,
 } from './types'
 import { setActivePinia, piniaSymbol, Pinia, activePinia } from './rootStore'
-import { IS_CLIENT } from './env'
 import { patchObject } from './hmr'
 import { addSubscription, triggerSubscriptions, noop } from './subscriptions'
 
@@ -534,13 +533,6 @@ function createSetupStore<
           ? // @ts-expect-error
             options.getters[key]
           : prop
-        if (IS_CLIENT) {
-          const getters: string[] =
-            (setupStore._getters as string[]) ||
-            // @ts-expect-error: same
-            ((setupStore._getters = markRaw([])) as string[])
-          getters.push(key)
-        }
       }
     }
   }
@@ -891,21 +883,6 @@ export function defineStore(
       // cleanup the state properties and the store from the cache
       delete pinia.state.value[hotId]
       pinia._s.delete(hotId)
-    }
-
-    if (__DEV__ && IS_CLIENT) {
-      const currentInstance = getCurrentInstance()
-      // save stores in instances to access them devtools
-      if (
-        currentInstance &&
-        currentInstance.proxy &&
-        // avoid adding stores that are just built for hot module replacement
-        !hot
-      ) {
-        const vm = currentInstance.proxy
-        const cache = '_pStores' in vm ? vm._pStores! : (vm._pStores = {})
-        cache[id] = store
-      }
     }
 
     // StoreGeneric cannot be casted towards Store
