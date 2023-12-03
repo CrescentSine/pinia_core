@@ -35,7 +35,6 @@ export default defineConfig({
         '**/src/devtools',
         '**/src/hmr.ts',
         '**/src/deprecated.ts',
-        '**/src/vue2-plugin.ts',
       ],
     },
     setupFiles: ['packages/pinia/__tests__/vitest-setup.ts'],

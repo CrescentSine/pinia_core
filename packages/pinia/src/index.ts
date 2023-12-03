@@ -82,5 +82,3 @@ export type {
 } from './mapHelpers'
 
 export { acceptHMRUpdate } from './hmr'
-
-export { PiniaVuePlugin } from './vue2-plugin'
