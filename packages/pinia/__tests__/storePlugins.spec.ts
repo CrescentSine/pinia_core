@@ -1,12 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createPinia, defineStore } from '../src'
 import { mount } from '@vue/test-utils'
-import { App, computed, ref, toRef, watch } from 'vue'
+import { computed, ref, toRef, watch } from 'vue'
 
 declare module '../src' {
   export interface PiniaCustomProperties<Id> {
     pluginN: number
-    uid: App['_uid']
     hasApp: boolean
     idFromPlugin: Id
     globalA: string
@@ -41,21 +40,20 @@ describe('store plugins', () => {
     mount({ template: 'none' }, { global: { plugins: [pinia] } })
 
     // must call use after installing the plugin
-    pinia.use(({ app, store }) => {
+    pinia.use(({ store }) => {
       if (!store.$state.hasOwnProperty('pluginN')) {
         // @ts-expect-error: cannot be a ref yet
         store.$state.pluginN = ref(20)
       }
       // @ts-expect-error: TODO: allow setting refs
       store.pluginN = toRef(store.$state, 'pluginN')
-      return { uid: app._uid }
+      return {}
     })
 
     const store = useStore(pinia)
 
     expect(store.$state.pluginN).toBe(20)
     expect(store.pluginN).toBe(20)
-    expect(store.uid).toBeDefined()
     // @ts-expect-error: pluginN is a number
     store.pluginN.notExisting
     // @ts-expect-error: it should always be 'test'
@@ -81,7 +79,6 @@ describe('store plugins', () => {
 
       const originalReset = store.$reset.bind(store)
       return {
-        uid: app._uid,
         $reset() {
           originalReset()
           store.pluginN = 20
@@ -101,7 +98,6 @@ describe('store plugins', () => {
     const pinia = createPinia()
 
     pinia.use(() => ({ pluginN: 1 }))
-    pinia.use(({ app }) => ({ uid: app._uid }))
 
     mount({ template: 'none' }, { global: { plugins: [pinia] } })
 
@@ -110,7 +106,6 @@ describe('store plugins', () => {
     const store = useStore(pinia)
 
     expect(store.pluginN).toBe(1)
-    expect(store.uid).toBeDefined()
     expect(store.hasApp).toBe(true)
   })
 

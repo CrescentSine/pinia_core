@@ -5,7 +5,7 @@ import {
   _ActionsTree,
   storeToRefs,
 } from './'
-import { App, computed, ComputedRef, ref, Ref } from 'vue'
+import { computed, ComputedRef, ref, Ref } from 'vue'
 
 declare module '../dist/pinia' {
   export interface PiniaCustomProperties<Id, S, G, A> {
@@ -35,7 +35,6 @@ const pinia = createPinia()
 pinia.use((context) => {
   expectType<_ActionsTree>(context.options.actions)
   expectType<string>(context.store.$id)
-  expectType<App>(context.app)
 
   expectType<number>(context.store.$state.myState)
   expectType<number>(context.store.myState)

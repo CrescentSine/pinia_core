@@ -1,5 +1,4 @@
 import {
-  App,
   createApp,
   customRef,
   isReactive,
@@ -74,8 +73,6 @@ export interface TestingOptions {
  * `Pinia` instance with test specific properties.
  */
 export interface TestingPinia extends Pinia {
-  /** App used by Pinia */
-  app: App
 }
 
 declare var vi:
@@ -150,14 +147,6 @@ export function createTestingPinia({
   pinia._testing = true
 
   setActivePinia(pinia)
-
-  Object.defineProperty(pinia, 'app', {
-    configurable: true,
-    enumerable: true,
-    get(): App {
-      return this._a
-    },
-  })
 
   return pinia as TestingPinia
 }

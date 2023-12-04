@@ -69,13 +69,6 @@ export interface Pinia {
   _p: PiniaPlugin[]
 
   /**
-   * App linked to this Pinia instance
-   *
-   * @internal
-   */
-  _a: App
-
-  /**
    * Effect scope the pinia is attached to
    *
    * @internal
@@ -114,11 +107,6 @@ export interface PiniaPluginContext<
    * pinia instance.
    */
   pinia: Pinia
-
-  /**
-   * Current app created with `Vue.createApp()`.
-   */
-  app: App
 
   /**
    * Current store being extended.
