@@ -1,15 +1,10 @@
 import {
-  App,
-  EffectScope,
-  inject,
-  hasInjectionContext,
-  InjectionKey,
   Ref,
+  EffectScope,
 } from 'vue-demi'
 import {
   StateTree,
   PiniaCustomProperties,
-  _Method,
   Store,
   _GettersTree,
   _ActionsTree,
@@ -42,8 +37,7 @@ interface _SetActivePinia {
 /**
  * Get the currently active pinia if there is any.
  */
-export const getActivePinia = () =>
-  (hasInjectionContext() && inject(piniaSymbol)) || activePinia
+export const getActivePinia = () => activePinia
 
 /**
  * Every application must own its own pinia to be able to create stores
@@ -89,10 +83,6 @@ export interface Pinia {
    */
   _testing?: boolean
 }
-
-export const piniaSymbol = (
-  __DEV__ ? Symbol('pinia') : /* istanbul ignore next */ Symbol()
-) as InjectionKey<Pinia>
 
 /**
  * Context argument passed to Pinia plugins.

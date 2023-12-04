@@ -1,11 +1,7 @@
 import {
-  watch,
   computed,
-  inject,
-  hasInjectionContext,
   reactive,
   DebuggerEvent,
-  WatchOptions,
   UnwrapRef,
   markRaw,
   isRef,
@@ -16,8 +12,12 @@ import {
   toRaw,
   toRefs,
   ref,
-  nextTick,
 } from 'vue-demi'
+import {
+  watch,
+  WatchOptions,
+  nextTick,
+} from './fromVue'
 import {
   StateTree,
   SubscriptionCallback,
@@ -41,7 +41,7 @@ import {
   _ExtractStateFromSetupStore,
   _StoreWithState,
 } from './types'
-import { setActivePinia, piniaSymbol, Pinia, activePinia } from './rootStore'
+import { setActivePinia, Pinia, activePinia } from './rootStore'
 import { addSubscription, triggerSubscriptions, noop } from './subscriptions'
 
 const fallbackRunWithContext = (fn: () => unknown) => fn()
@@ -420,8 +420,7 @@ function createSetupStore<
   // creating infinite loops.
   pinia._s.set($id, store)
 
-  const runWithContext =
-    (pinia._a && pinia._a.runWithContext) || fallbackRunWithContext
+  const runWithContext = fallbackRunWithContext
 
   // TODO: idea create skipSerialize that marks properties as non serializable and they are skipped
   const setupStore = runWithContext(() =>
@@ -488,7 +487,6 @@ function createSetupStore<
       scope.run(() =>
         extender({
           store,
-          app: pinia._a,
           pinia,
           options: optionsForPlugin,
         })
@@ -664,12 +662,10 @@ export function defineStore(
   }
 
   function useStore(pinia?: Pinia | null): StoreGeneric {
-    const hasContext = hasInjectionContext()
     pinia =
       // in test mode, ignore the argument provided as we can always retrieve a
       // pinia instance with getActivePinia()
-      (__TEST__ && activePinia && activePinia._testing ? null : pinia) ||
-      (hasContext ? inject(piniaSymbol, null) : null)
+      __TEST__ && activePinia && activePinia._testing ? null : pinia
     if (pinia) setActivePinia(pinia)
 
     if (__DEV__ && !activePinia) {

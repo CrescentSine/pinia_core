@@ -2,8 +2,8 @@ import type {
   ComputedRef,
   DebuggerEvent,
   UnwrapRef,
-  WatchOptions,
 } from 'vue-demi'
+import type { WatchOptions } from './fromVue'
 import { Pinia } from './rootStore'
 
 /**
