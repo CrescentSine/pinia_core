@@ -49,8 +49,6 @@ export const getActivePinia = () =>
  * Every application must own its own pinia to be able to create stores
  */
 export interface Pinia {
-  install: (app: App) => void
-
   /**
    * root state
    */

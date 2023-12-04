@@ -4,8 +4,6 @@ import {
   customRef,
   isReactive,
   isRef,
-  isVue2,
-  set,
   toRaw,
   triggerRef,
 } from 'vue-demi'
@@ -182,12 +180,8 @@ function mergeReactiveObjects<T extends StateTree>(
     ) {
       target[key] = mergeReactiveObjects(targetValue, subPatch)
     } else {
-      if (isVue2) {
-        set(target, key, subPatch)
-      } else {
-        // @ts-expect-error: subPatch is a valid value
-        target[key] = subPatch
-      }
+      // @ts-expect-error: subPatch is a valid value
+      target[key] = subPatch
     }
   }
 
