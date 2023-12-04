@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref } from '@vue/reactivity'
 import { describe, expect, it } from 'vitest'
 import { createTestingPinia } from './testing'
 import { restoreGetter } from './restoreGetters'

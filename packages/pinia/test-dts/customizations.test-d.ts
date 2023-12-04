@@ -5,7 +5,7 @@ import {
   _ActionsTree,
   storeToRefs,
 } from './'
-import { computed, ComputedRef, ref, Ref } from 'vue'
+import { computed, ComputedRef, ref, Ref } from '@vue/reactivity'
 
 declare module '../dist/pinia' {
   export interface PiniaCustomProperties<Id, S, G, A> {

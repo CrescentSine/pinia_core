@@ -2,7 +2,7 @@ import type {
   ComputedRef,
   DebuggerEvent,
   UnwrapRef,
-} from 'vue-demi'
+} from '@vue/reactivity'
 import type { WatchOptions } from './fromVue'
 import { Pinia } from './rootStore'
 

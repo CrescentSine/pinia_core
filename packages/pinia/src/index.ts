@@ -59,3 +59,75 @@ export type {
 export { MutationType } from './types'
 
 export { storeToRefs } from './storeToRefs'
+
+export {
+  watch,
+  watchEffect,
+  watchPostEffect,
+  watchSyncEffect,
+  nextTick,
+} from './fromVue'
+
+export {
+  // core
+  reactive,
+  ref,
+  readonly,
+  computed,
+  // utilities
+  unref,
+  proxyRefs,
+  isRef,
+  toRef,
+  toValue,
+  toRefs,
+  isProxy,
+  isReactive,
+  isReadonly,
+  isShallow,
+  // advanced
+  customRef,
+  triggerRef,
+  shallowRef,
+  shallowReactive,
+  shallowReadonly,
+  markRaw,
+  toRaw,
+  // effect
+  effect,
+  stop,
+  ReactiveEffect,
+  // effect scope
+  effectScope,
+  EffectScope,
+  getCurrentScope,
+  onScopeDispose
+} from '@vue/reactivity'
+
+export type {
+  Ref,
+  MaybeRef,
+  MaybeRefOrGetter,
+  ToRef,
+  ToRefs,
+  UnwrapRef,
+  ShallowRef,
+  ShallowUnwrapRef,
+  CustomRefFactory,
+  ReactiveFlags,
+  DeepReadonly,
+  ShallowReactive,
+  UnwrapNestedRefs,
+  ComputedRef,
+  WritableComputedRef,
+  WritableComputedOptions,
+  ComputedGetter,
+  ComputedSetter,
+  ReactiveEffectRunner,
+  ReactiveEffectOptions,
+  EffectScheduler,
+  DebuggerOptions,
+  DebuggerEvent,
+  DebuggerEventExtraInfo,
+  Raw
+} from '@vue/reactivity'

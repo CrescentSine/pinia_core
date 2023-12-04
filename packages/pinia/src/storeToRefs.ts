@@ -7,7 +7,7 @@ import {
   ToRef,
   toRef,
   ToRefs,
-} from 'vue-demi'
+} from '@vue/reactivity'
 import { StoreGetters, StoreState } from './store'
 import type { PiniaCustomStateProperties, StoreGeneric } from './types'
 

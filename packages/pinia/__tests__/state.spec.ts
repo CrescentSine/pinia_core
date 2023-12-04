@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect, vi, Mock } from 'vitest'
-import { createPinia, defineStore, setActivePinia, skipHydrate } from '../src'
-import { computed, nextTick, reactive, ref, watch, customRef } from 'vue'
+import { createPinia, defineStore, setActivePinia, skipHydrate, nextTick, watch } from '../src'
+import { computed, reactive, ref, customRef } from '@vue/reactivity'
 
 describe('State', () => {
   beforeEach(() => {

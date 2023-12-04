@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref } from '@vue/reactivity'
 import { defineStore, expectType } from './'
 
 const useSetupStore = defineStore('name', () => {

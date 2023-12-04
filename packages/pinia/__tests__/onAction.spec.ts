@@ -1,7 +1,5 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
-import { createPinia, defineStore, setActivePinia } from '../src'
-import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { createPinia, defineStore, setActivePinia, nextTick } from '../src'
 
 describe('Subscriptions', () => {
   const useStore = () => {
@@ -178,47 +176,6 @@ describe('Subscriptions', () => {
 
       expect(spy1).toHaveBeenCalledTimes(1)
       expect(spy2).toHaveBeenCalledTimes(1)
-    })
-
-    it('removes on unmount', async () => {
-      const pinia = createPinia()
-      const spy1 = vi.fn()
-      const spy2 = vi.fn()
-
-      const wrapper = mount(
-        {
-          setup() {
-            const s1 = useStore()
-            s1.$onAction(spy1)
-          },
-          template: `<p/>`,
-        },
-        { global: { plugins: [pinia] } }
-      )
-
-      const s1 = useStore()
-      const s2 = useStore()
-
-      s2.$onAction(spy2)
-
-      expect(spy1).toHaveBeenCalledTimes(0)
-      expect(spy2).toHaveBeenCalledTimes(0)
-
-      s1.changeName('Cleiton')
-
-      expect(spy2).toHaveBeenCalledTimes(1)
-      expect(spy1).toHaveBeenCalledTimes(1)
-
-      s1.changeName('other')
-      expect(spy1).toHaveBeenCalledTimes(2)
-      expect(spy2).toHaveBeenCalledTimes(2)
-
-      wrapper.unmount()
-      await nextTick()
-
-      s1.changeName('again')
-      expect(spy1).toHaveBeenCalledTimes(2)
-      expect(spy2).toHaveBeenCalledTimes(3)
     })
   })
 })

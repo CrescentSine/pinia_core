@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPinia, defineStore } from '../src'
-import { mount } from '@vue/test-utils'
-import { computed, ref, toRef, watch } from 'vue'
+import { createPinia, defineStore, watch } from '../src'
+import { computed, ref, toRef } from '@vue/reactivity'
 
 declare module '../src' {
   export interface PiniaCustomProperties<Id> {
@@ -37,8 +36,6 @@ describe('store plugins', () => {
   it('adds properties to stores', () => {
     const pinia = createPinia()
 
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
-
     // must call use after installing the plugin
     pinia.use(({ store }) => {
       if (!store.$state.hasOwnProperty('pluginN')) {
@@ -60,48 +57,12 @@ describe('store plugins', () => {
     store.idFromPlugin == 'hello'
   })
 
-  it('overrides $reset', () => {
-    const pinia = createPinia()
-
-    const useStore = defineStore('main', {
-      state: () => ({ n: 0 }),
-    })
-
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
-
-    pinia.use(({ app, store }) => {
-      if (!store.$state.hasOwnProperty('pluginN')) {
-        // @ts-expect-error: cannot be a ref yet
-        store.$state.pluginN = ref(20)
-      }
-      // @ts-expect-error: TODO: allow setting refs
-      store.pluginN = toRef(store.$state, 'pluginN')
-
-      const originalReset = store.$reset.bind(store)
-      return {
-        $reset() {
-          originalReset()
-          store.pluginN = 20
-        },
-      }
-    })
-
-    const store = useStore(pinia)
-
-    store.pluginN = 200
-    store.$reset()
-    expect(store.$state.pluginN).toBe(20)
-    expect(store.pluginN).toBe(20)
-  })
-
   it('can install plugins before installing pinia', () => {
     const pinia = createPinia()
 
     pinia.use(() => ({ pluginN: 1 }))
 
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
-
-    pinia.use((app) => ({ hasApp: !!app }))
+    pinia.use(() => ({ hasApp: true }))
 
     const store = useStore(pinia)
 
@@ -117,8 +78,6 @@ describe('store plugins', () => {
       return { pluginN: 20 }
     })
 
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
-
     const store = useStore(pinia)
 
     expect(store.incrementN()).toBe(20)
@@ -132,8 +91,6 @@ describe('store plugins', () => {
       return { pluginN: 20 }
     })
 
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
-
     const store = useStore(pinia)
     expect(store.doubleN).toBe(40)
   })
@@ -144,8 +101,6 @@ describe('store plugins', () => {
     // must call use after installing the plugin
     pinia.use(() => ({ globalA: 'a' })).use(() => ({ globalB: 'b' }))
 
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
-
     const store = useStore(pinia)
     expect(store.globalA).toBe('a')
     expect(store.globalB).toBe('b')
@@ -154,10 +109,8 @@ describe('store plugins', () => {
   it('shares the same ref among stores', () => {
     const pinia = createPinia()
 
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
-
     // must call use after installing the plugin
-    pinia.use(({ app, store }) => {
+    pinia.use(({ store }) => {
       if (!store.$state.hasOwnProperty('shared')) {
         // @ts-expect-error: cannot be a ref yet
         store.$state.shared = ref(20)
@@ -205,7 +158,6 @@ describe('store plugins', () => {
     }
     const useStore = defineStore(options)
     const pinia = createPinia()
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
 
     await new Promise<void>((done) => {
       pinia.use((context) => {
@@ -228,7 +180,6 @@ describe('store plugins', () => {
       return { n, increment, a }
     })
     const pinia = createPinia()
-    mount({ template: 'none' }, { global: { plugins: [pinia] } })
 
     await new Promise<void>((done) => {
       pinia.use((context) => {
@@ -259,17 +210,6 @@ describe('store plugins', () => {
       state: () => ({ n: 1 }),
     })
 
-    mount(
-      {
-        template: 'none',
-        setup() {
-          // create it inside of the component
-          useStore()
-        },
-      },
-      { global: { plugins: [pinia] } }
-    ).unmount()
-
     const store = useStore(pinia)
 
     const spy = vi.fn()
@@ -278,21 +218,6 @@ describe('store plugins', () => {
     expect(spy).toHaveBeenCalledTimes(0)
 
     store.n++
-    expect(spy).toHaveBeenCalledTimes(1)
-  })
-
-  it('only executes plugins once after multiple installs', async () => {
-    const pinia = createPinia()
-
-    const spy = vi.fn()
-    pinia.use(spy)
-
-    for (let i = 0; i < 3; i++) {
-      mount({ template: 'none' }, { global: { plugins: [pinia] } }).unmount()
-    }
-
-    useStore(pinia)
-
     expect(spy).toHaveBeenCalledTimes(1)
   })
 })

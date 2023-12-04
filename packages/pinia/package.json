@@ -73,18 +73,14 @@
     "@vue/test-utils": "^2.4.0"
   },
   "dependencies": {
-    "vue-demi": ">=0.14.5"
+    "@vue/reactivity": "^3.3.10",
+    "@vue/shared": "^3.3.10"
   },
   "peerDependencies": {
-    "@vue/composition-api": "^1.4.0",
-    "typescript": ">=4.4.4",
-    "vue": "^2.6.14 || ^3.3.0"
+    "typescript": ">=4.4.4"
   },
   "peerDependenciesMeta": {
     "typescript": {
-      "optional": true
-    },
-    "@vue/composition-api": {
       "optional": true
     }
   },

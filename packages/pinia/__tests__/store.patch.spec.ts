@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { reactive, ref } from 'vue'
+import { reactive, ref } from '@vue/reactivity'
 import { createPinia, defineStore, Pinia, setActivePinia } from '../src'
 
 describe('store.$patch', () => {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, it, expect } from 'vitest'
-import { ref, computed } from 'vue'
+import { ref, computed } from '@vue/reactivity'
 import { createPinia, defineStore, setActivePinia } from '../src'
 
 function expectType<T>(_value: T): void {}

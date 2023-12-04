@@ -1,5 +1,5 @@
 import { describe, beforeEach, it, expect } from 'vitest'
-import { computed, reactive, ref, ToRefs } from 'vue'
+import { computed, reactive, ref, ToRefs } from '@vue/reactivity'
 import { createPinia, defineStore, setActivePinia, storeToRefs } from '../src'
 
 describe('storeToRefs', () => {

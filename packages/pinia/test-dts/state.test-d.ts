@@ -1,4 +1,4 @@
-import { computed, ref, shallowRef } from 'vue'
+import { computed, ref, shallowRef } from '@vue/reactivity'
 import { defineStore, expectType } from './'
 
 const name = ref('Eduardo')

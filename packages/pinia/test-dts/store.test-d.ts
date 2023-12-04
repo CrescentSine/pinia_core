@@ -1,5 +1,5 @@
-import { StoreGeneric, defineStore, expectType } from './'
-import { UnwrapRef, watch } from 'vue'
+import { StoreGeneric, defineStore, expectType, watch } from './'
+import { UnwrapRef } from '@vue/reactivity'
 
 const useStore = defineStore({
   id: 'name',

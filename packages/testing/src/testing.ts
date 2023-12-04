@@ -1,12 +1,11 @@
 import {
-  createApp,
   customRef,
   isReactive,
   isRef,
   toRaw,
   triggerRef,
-} from 'vue-demi'
-import type { ComputedRef, WritableComputedRef } from 'vue-demi'
+} from '@vue/reactivity'
+import type { ComputedRef, WritableComputedRef } from '@vue/reactivity'
 import {
   Pinia,
   PiniaPlugin,
@@ -53,14 +52,6 @@ export interface TestingOptions {
   stubReset?: boolean
 
   /**
-   * Creates an empty App and calls `app.use(pinia)` with the created testing
-   * pinia. This allows you to use plugins while unit testing stores as
-   * plugins **will wait for pinia to be installed in order to be executed**.
-   * Defaults to false.
-   */
-  fakeApp?: boolean
-
-  /**
    * Function used to create a spy for actions and `$patch()`. Pre-configured
    * with `jest.fn` in Jest projects or `vi.fn` in Vitest projects if
    * `globals: true` is set.
@@ -98,7 +89,6 @@ export function createTestingPinia({
   stubActions = true,
   stubPatch = false,
   stubReset = false,
-  fakeApp = false,
   createSpy: _createSpy,
 }: TestingOptions = {}): TestingPinia {
   const pinia = createPinia()
@@ -138,11 +128,6 @@ export function createTestingPinia({
     store.$patch = stubPatch ? createSpy() : createSpy(store.$patch)
     store.$reset = stubReset ? createSpy() : createSpy(store.$reset)
   })
-
-  if (fakeApp) {
-    const app = createApp({})
-    app.use(pinia)
-  }
 
   pinia._testing = true
 

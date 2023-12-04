@@ -21,7 +21,7 @@ export default config
  */
 function createConfig(file) {
   return {
-    external: ['vue'],
+    external: [],
     output: {
       file: resolve(__dirname, `./dist/${file}.js`),
       format: 'es',

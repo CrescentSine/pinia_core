@@ -1,7 +1,5 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
-import { createPinia, defineStore, MutationType, setActivePinia } from '../src'
-import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { createPinia, defineStore, MutationType, setActivePinia, nextTick } from '../src'
 
 describe('Subscriptions', () => {
   const useStore = defineStore({
@@ -55,17 +53,6 @@ describe('Subscriptions', () => {
       const pinia = createPinia()
       setActivePinia(pinia)
       const spy1 = vi.fn()
-
-      mount(
-        {
-          setup() {
-            const s1 = useStore()
-            s1.$subscribe(spy1, { flush })
-          },
-          template: `<p/>`,
-        },
-        { global: { plugins: [pinia] } }
-      )
 
       const s1 = useStore()
 
@@ -231,61 +218,6 @@ describe('Subscriptions', () => {
         expect.objectContaining({ type: MutationType.direct }),
         s1.$state
       )
-    })
-
-    it('removes on unmount', async () => {
-      const pinia = createPinia()
-      setActivePinia(pinia)
-      const spy1 = vi.fn()
-      const spy2 = vi.fn()
-
-      const wrapper = mount(
-        {
-          setup() {
-            const s1 = useStore()
-            s1.$subscribe(spy1, { flush: 'sync' })
-          },
-          template: `<p/>`,
-        },
-        { global: { plugins: [pinia] } }
-      )
-
-      const s1 = useStore()
-      const s2 = useStore()
-
-      s2.$subscribe(spy2, { flush: 'sync' })
-
-      expect(spy1).toHaveBeenCalledTimes(0)
-      expect(spy2).toHaveBeenCalledTimes(0)
-
-      s1.user = 'Edu'
-      expect(spy1).toHaveBeenCalledTimes(1)
-      expect(spy2).toHaveBeenCalledTimes(1)
-
-      s1.$patch({ user: 'a' })
-      expect(spy1).toHaveBeenCalledTimes(2)
-      expect(spy2).toHaveBeenCalledTimes(2)
-
-      s1.$patch((state) => {
-        state.user = 'other'
-      })
-      expect(spy1).toHaveBeenCalledTimes(3)
-      expect(spy2).toHaveBeenCalledTimes(3)
-
-      wrapper.unmount()
-      await nextTick()
-
-      s1.$patch({ user: 'b' })
-      expect(spy1).toHaveBeenCalledTimes(3)
-      expect(spy2).toHaveBeenCalledTimes(4)
-      s1.$patch((state) => {
-        state.user = 'c'
-      })
-      expect(spy1).toHaveBeenCalledTimes(3)
-      expect(spy2).toHaveBeenCalledTimes(5)
-      s1.user = 'd'
-      expect(spy1).toHaveBeenCalledTimes(3)
-      expect(spy2).toHaveBeenCalledTimes(6)
     })
   })
 

@@ -1,5 +1,5 @@
 import { Pinia } from './rootStore'
-import { ref, markRaw, effectScope, Ref } from 'vue-demi'
+import { ref, markRaw, effectScope, Ref } from '@vue/reactivity'
 import { StateTree, StoreGeneric } from './types'
 
 /**
@@ -23,8 +23,6 @@ export function createPinia(): Pinia {
 
     _p,
     // it's actually undefined here
-    // @ts-expect-error
-    _a: null,
     _e: scope,
     _s: new Map<string, StoreGeneric>(),
     state,

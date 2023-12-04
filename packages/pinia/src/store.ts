@@ -12,7 +12,7 @@ import {
   toRaw,
   toRefs,
   ref,
-} from 'vue-demi'
+} from '@vue/reactivity'
 import {
   watch,
   WatchOptions,
@@ -429,6 +429,7 @@ function createSetupStore<
 
   // overwrite existing actions to support $onAction
   for (const key in setupStore) {
+    // @ts-expect-error: prop is unknown
     const prop = setupStore[key]
 
     if ((isRef(prop) && !isComputed(prop)) || isReactive(prop)) {
@@ -439,7 +440,6 @@ function createSetupStore<
             prop.value = initialState[key]
           } else {
             // probably a reactive object, lets recursively assign
-            // @ts-expect-error: prop is unknown
             mergeReactiveObjects(prop, initialState[key])
           }
         }
@@ -449,7 +449,6 @@ function createSetupStore<
 
       // action
     } else if (typeof prop === 'function') {
-      // @ts-expect-error: we are overriding the function we avoid wrapping if
       const actionValue = wrapAction(key, prop)
       // this a hot module replacement store because the hotUpdate method needs
       // to do it with the right context

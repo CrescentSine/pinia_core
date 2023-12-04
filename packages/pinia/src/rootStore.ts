@@ -1,7 +1,7 @@
 import {
   Ref,
   EffectScope,
-} from 'vue-demi'
+} from '@vue/reactivity'
 import {
   StateTree,
   PiniaCustomProperties,

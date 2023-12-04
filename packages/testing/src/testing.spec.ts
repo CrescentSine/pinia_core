@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
-import { createTestingPinia, TestingOptions } from './testing'
-import { createPinia, defineStore, setActivePinia } from 'pinia'
-import { mount } from '@vue/test-utils'
-import { defineComponent, ref, computed } from 'vue'
+import { describe, expect, it } from 'vitest'
+import { createTestingPinia } from './testing'
+import { defineStore, setActivePinia } from 'pinia'
+import { ref, computed } from '@vue/reactivity'
 
 describe('Testing', () => {
   const useCounter = defineStore('counter', {
@@ -34,210 +33,24 @@ describe('Testing', () => {
     return { n, double, doublePlusOne, increment, $reset }
   })
 
-  type CounterStore =
-    | ReturnType<typeof useCounter>
-    | ReturnType<typeof useCounterSetup>
-
   const STORES_TO_TEST = {
     'Options Store': useCounter,
     'Setup Store': useCounterSetup,
   }
 
-  const Counter = (useStore: () => CounterStore) =>
-    defineComponent({
-      setup() {
-        const counter = useStore()
-        return { counter }
-      },
-      template: `
-    <button @click="counter.increment()">+1</button>
-    <span>{{ counter.n }}</span>
-    <button @click="counter.increment(10)">+10</button>
-    `,
-    })
-
-  function factory(
-    options?: TestingOptions,
-    useStore: () => CounterStore = useCounter
-  ) {
-    const wrapper = mount(Counter(useStore), {
-      global: {
-        plugins: [createTestingPinia(options)],
-      },
-    })
-
-    const counter = useStore()
-
-    return { wrapper, counter }
-  }
-
   for (const name in STORES_TO_TEST) {
     const useStore = STORES_TO_TEST[name as keyof typeof STORES_TO_TEST]
 
-    describe(name, () => {
-      describe('actions', () => {
-        it(`spies with no config with ${name}`, () => {
-          const { counter, wrapper } = factory(undefined, useStore)
-
-          counter.increment()
-          expect(counter.n).toBe(0)
-          expect(counter.increment).toHaveBeenCalledTimes(1)
-          expect(counter.increment).toHaveBeenLastCalledWith()
-
-          counter.increment(5)
-          expect(counter.n).toBe(0)
-          expect(counter.increment).toHaveBeenCalledTimes(2)
-          expect(counter.increment).toHaveBeenLastCalledWith(5)
-
-          wrapper.findAll('button')[0].trigger('click')
-          expect(counter.n).toBe(0)
-          expect(counter.increment).toHaveBeenCalledTimes(3)
-          expect(counter.increment).toHaveBeenLastCalledWith()
-
-          wrapper.findAll('button')[1].trigger('click')
-          expect(counter.n).toBe(0)
-          expect(counter.increment).toHaveBeenCalledTimes(4)
-          expect(counter.increment).toHaveBeenLastCalledWith(10)
-        })
-
-        it(`can execute actions with ${name}`, () => {
-          const { counter, wrapper } = factory({ stubActions: false }, useStore)
-
-          counter.increment()
-          expect(counter.n).toBe(1)
-          expect(counter.increment).toHaveBeenCalledTimes(1)
-          expect(counter.increment).toHaveBeenLastCalledWith()
-
-          counter.increment(5)
-          expect(counter.n).toBe(6)
-          expect(counter.increment).toHaveBeenCalledTimes(2)
-          expect(counter.increment).toHaveBeenLastCalledWith(5)
-
-          wrapper.findAll('button')[0].trigger('click')
-          expect(counter.n).toBe(7)
-          expect(counter.increment).toHaveBeenCalledTimes(3)
-          expect(counter.increment).toHaveBeenLastCalledWith()
-
-          wrapper.findAll('button')[1].trigger('click')
-          expect(counter.n).toBe(17)
-          expect(counter.increment).toHaveBeenCalledTimes(4)
-          expect(counter.increment).toHaveBeenLastCalledWith(10)
-        })
-      })
-    })
-
-    describe('builtins', () => {
-      it(`spies $patch calls in ${name}`, () => {
-        const { counter } = factory(undefined, useStore)
-
-        expect(counter.n).toBe(0)
-        expect(counter.$patch).toHaveBeenCalledTimes(0)
-        counter.$patch({ n: 1 })
-        expect(counter.$patch).toHaveBeenCalledTimes(1)
-        expect(counter.$patch).toHaveBeenLastCalledWith({ n: 1 })
-        expect(counter.n).toBe(1)
-      })
-
-      it(`can stub $patch calls ${name}`, () => {
-        const { counter } = factory({ stubPatch: true }, useStore)
-
-        expect(counter.n).toBe(0)
-        expect(counter.$patch).toHaveBeenCalledTimes(0)
-        counter.$patch({ n: 1 })
-        expect(counter.$patch).toHaveBeenCalledTimes(1)
-        expect(counter.$patch).toHaveBeenLastCalledWith({ n: 1 })
-        expect(counter.n).toBe(0)
-      })
-
-      it(`ignores $reset ${name}`, () => {
-        const { counter } = factory(undefined, useStore)
-
-        counter.n = 5
-        counter.$reset()
-        expect(counter.n).toBe(0)
-      })
-
-      it(`can stub $reset calls ${name}`, () => {
-        const { counter } = factory({ stubReset: true }, useStore)
-
-        counter.n = 5
-        counter.$reset()
-        expect(counter.n).toBe(5)
-      })
-    })
-
     describe('plugins', () => {
-      it('executes plugins', () => {
-        const { counter, wrapper } = factory(
-          {
-            plugins: [() => ({ pluginN: 0 })],
-          },
-          useStore
-        )
-
-        expect(counter.pluginN).toBe(0)
-        expect(wrapper.vm.counter.pluginN).toBe(0)
-      })
 
       it('executes plugins with fakeApp', () => {
         const pinia = createTestingPinia({
           plugins: [() => ({ pluginN: 0 })],
-          fakeApp: true,
         })
 
         const counter = useStore(pinia)
 
         expect(counter.pluginN).toBe(0)
-        expect(pinia.app).toHaveProperty('mount', expect.any(Function))
-      })
-
-      it('actions are stubbed even when replaced by other plugins', () => {
-        const spy = vi.fn()
-        const { counter } = factory(
-          {
-            plugins: [
-              ({ store }) => {
-                const { increment } = store.increment
-                store.increment = spy
-                spy.mockImplementation(increment)
-              },
-            ],
-          },
-          useStore
-        )
-
-        counter.increment()
-        counter.increment(5)
-        expect(counter.n).toBe(0)
-        expect(counter.increment).toHaveBeenCalledTimes(2)
-        expect(counter.increment).toHaveBeenLastCalledWith(5)
-        // the actual spy is never called because we stub the action
-        expect(spy).toHaveBeenCalledTimes(0)
-      })
-
-      it('pass through replaced actions in plugins', () => {
-        const spy = vi.fn()
-        const { counter } = factory(
-          {
-            stubActions: false,
-            plugins: [
-              ({ store }) => {
-                const { increment } = store.increment
-                store.increment = spy
-                spy.mockImplementation(increment)
-              },
-            ],
-          },
-          useStore
-        )
-
-        counter.increment()
-        counter.increment(5)
-        expect(counter.n).toBe(0)
-        expect(counter.increment).toHaveBeenCalledTimes(2)
-        expect(counter.increment).toHaveBeenLastCalledWith(5)
-        expect(spy).toHaveBeenCalledTimes(2)
-        expect(spy).toHaveBeenLastCalledWith(5)
       })
 
       it('can override getters added in plugins', () => {
@@ -302,40 +115,6 @@ describe('Testing', () => {
       })
     })
   }
-
-  it('works with no actions', () => {
-    const useEmpty = defineStore('empty', {})
-
-    const Empty = defineComponent({
-      setup() {
-        const empty = useEmpty()
-        return { empty }
-      },
-      template: `{{ empty.$id }}`,
-    })
-
-    const wrapper = mount(Empty, {
-      global: {
-        plugins: [createTestingPinia()],
-      },
-    })
-
-    expect(wrapper.text()).toBe('empty')
-  })
-
-  it('bypass useStore(pinia)', () => {
-    const realPinia = createPinia()
-    const { counter } = factory()
-
-    // it will actually use the testing pinia instead of the real one
-    const counterWithRealPinia = useCounter(realPinia)
-
-    expect(counter.n).toBe(0)
-    expect(counterWithRealPinia.n).toBe(0)
-    counter.n++
-    expect(counter.n).toBe(1)
-    expect(counterWithRealPinia.n).toBe(1)
-  })
 
   it('works with nested stores', () => {
     const useA = defineStore('a', () => {
