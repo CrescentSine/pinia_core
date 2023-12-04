@@ -58,25 +58,4 @@ export type {
 } from './types'
 export { MutationType } from './types'
 
-export {
-  mapActions,
-  mapStores,
-  mapState,
-  mapWritableState,
-  mapGetters,
-  setMapStoreSuffix,
-} from './mapHelpers'
-
 export { storeToRefs } from './storeToRefs'
-
-export type {
-  MapStoresCustomization,
-  _MapActionsObjectReturn,
-  _MapActionsReturn,
-  _MapStateObjectReturn,
-  _MapStateReturn,
-  _MapWritableStateObjectReturn,
-  _MapWritableStateReturn,
-  _Spread,
-  _StoreObject,
-} from './mapHelpers'

@@ -2,17 +2,12 @@ import {
   expectType,
   createPinia,
   defineStore,
-  mapStores,
   _ActionsTree,
   storeToRefs,
 } from './'
 import { App, computed, ComputedRef, ref, Ref } from 'vue'
 
 declare module '../dist/pinia' {
-  export interface MapStoresCustomization {
-    suffix: 'Store'
-  }
-
   export interface PiniaCustomProperties<Id, S, G, A> {
     $actions: Array<keyof A>
     myState: number
@@ -113,10 +108,6 @@ type Procedure = (...args: any[]) => any
 function debounce<F extends Procedure>(fn: F, time: number = 200) {
   return fn
 }
-
-expectType<{
-  mainStore: () => ReturnType<typeof useStore>
-}>(mapStores(useStore))
 
 pinia.use(({ options, store }) => {
   const { debounce: debounceOptions } = options
