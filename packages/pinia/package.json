@@ -1,28 +1,28 @@
 {
-  "name": "pinia",
+  "name": "pinia-core",
   "version": "2.1.7",
   "description": "Intuitive, type safe and flexible Store for Vue",
   "main": "index.js",
-  "module": "dist/pinia.mjs",
-  "unpkg": "dist/pinia.iife.js",
-  "jsdelivr": "dist/pinia.iife.js",
-  "types": "dist/pinia.d.ts",
+  "module": "dist/pinia-core.mjs",
+  "unpkg": "dist/pinia-core.iife.js",
+  "jsdelivr": "dist/pinia-core.iife.js",
+  "types": "dist/pinia-core.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/pinia.d.ts",
+      "types": "./dist/pinia-core.d.ts",
       "node": {
         "import": {
-          "production": "./dist/pinia.prod.cjs",
-          "development": "./dist/pinia.mjs",
-          "default": "./dist/pinia.mjs"
+          "production": "./dist/pinia-core.prod.cjs",
+          "development": "./dist/pinia-core.mjs",
+          "default": "./dist/pinia-core.mjs"
         },
         "require": {
-          "production": "./dist/pinia.prod.cjs",
-          "development": "./dist/pinia.cjs",
+          "production": "./dist/pinia-core.prod.cjs",
+          "development": "./dist/pinia-core.cjs",
           "default": "./index.js"
         }
       },
-      "import": "./dist/pinia.mjs",
+      "import": "./dist/pinia-core.mjs",
       "require": "./index.js"
     },
     "./package.json": "./package.json",
@@ -45,7 +45,7 @@
     "dist/*.js",
     "dist/*.mjs",
     "dist/*.cjs",
-    "dist/pinia.d.ts",
+    "dist/pinia-core.d.ts",
     "index.js",
     "index.cjs",
     "LICENSE",
