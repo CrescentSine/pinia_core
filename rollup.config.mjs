@@ -166,14 +166,14 @@ function createReplacePlugin(
     __COMMIT__: `"${process.env.COMMIT}"`,
     __VERSION__: `"${pkg.version}"`,
     __DEV__:
-      (isBundlerESMBuild && !isRawESMBuild) || (isNodeBuild && !isProduction)
+      isNodeBuild && !isProduction
         ? // preserve to be handled by bundlers
         `(process.env.NODE_ENV !== 'production')`
         : // hard coded dev/prod builds
         JSON.stringify(!isProduction),
     // this is only used during tests
     __TEST__:
-      (isBundlerESMBuild && !isRawESMBuild) || isNodeBuild
+      isNodeBuild
         ? `(process.env.NODE_ENV === 'test')`
         : 'false',
     // If the build is expected to run directly in the browser (global / esm builds)
@@ -191,6 +191,10 @@ function createReplacePlugin(
       replacements[key] = process.env[key]
     }
   })
+
+  if (!isNodeBuild || isProduction) {
+    replacements['process.env.NODE_ENV'] = isProduction ? `'production'` : `'development'`;
+  }
 
   return replace({
     preventAssignment: true,
